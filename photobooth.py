@@ -20,13 +20,13 @@ from events import Rpi_GPIO as GPIO
 #####################
 
 # Screen size
-display_size = (1024, 600)
+display_size = (1920, 1080)
 
 # Maximum size of assembled image
 image_size = (2352, 1568)
 
 # Size of pictures in the assembled image
-thumb_size = (1176, 784)
+thumb_size = (1920, 1080)
 
 # Image basename
 picture_basename = datetime.now().strftime("%Y-%m-%d/pic")
@@ -151,7 +151,7 @@ class Photobooth:
 
             # Display default message
             self.display.clear()
-            self.display.show_message("Hit the button!")
+            self.display.show_message("Knoepfle druecken!")
             self.display.apply()
 
             # Wait for an event and handle it
@@ -161,7 +161,7 @@ class Photobooth:
     def _run_slideshow(self):
         while True:
             self.camera.set_idle()
-            self.slideshow.display_next("Hit the button!")
+            self.slideshow.display_next("Knoepfle druecken!")
             tic = clock()
             while clock() - tic < self.slideshow_display_time:
                 self.check_and_handle_events()
@@ -215,18 +215,18 @@ class Photobooth:
             self.teardown()
         # Take pictures
         elif key == ord('c'):
-            self.take_picture()
+            self.take_single_picture()
 
     def handle_mousebutton(self, key, pos):
         """Implements the actions for the different mousebutton events"""
         # Take a picture
         if key == 1:
-            self.take_picture()
+            self.take_single_picture()
 
     def handle_gpio_event(self, channel):
         """Implements the actions taken for a GPIO event"""
         if channel == self.trigger_channel:
-            self.take_picture()
+            self.take_single_picture()
         elif channel == self.shutdown_channel:
             self.teardown()
 
@@ -335,6 +335,66 @@ class Photobooth:
                 self.display.show_message(str(seconds - i))
                 self.display.apply()
                 sleep(1)
+
+    def take_single_picture(self):
+        """Implements the picture taking routine"""
+        # Disable lamp
+        self.gpio.set_output(self.lamp_channel, 0)
+
+        # Show pose message
+        self.display.clear()
+        self.display.show_message("POSE!\n\nTaking a picture ...");
+        self.display.apply()
+        sleep(2)
+
+        # Extract display and image sizes
+        size = self.display.get_size()
+        outsize = (int(size[0]/2), int(size[1]/2))
+
+        # Countdown
+        self.show_counter(self.pose_time)
+
+        # Try each picture up to 3 times
+        remaining_attempts = 3
+        while remaining_attempts > 0:
+            remaining_attempts = remaining_attempts - 1
+
+            self.display.clear()
+            self.display.show_message("S M I L E !!!\n\n")
+            self.display.apply()
+
+            tic = clock()
+
+            try:
+                output_filename = self.pictures.get_next()
+                outfile = self.camera.take_picture(output_filename)
+                remaining_attempts = 0
+            except CameraException as e:
+                # On recoverable errors: display message and retry
+                if e.recoverable:
+                    if remaining_attempts > 0:
+                        self.display.clear()
+                        self.display.show_message(e.message)  
+                        self.display.apply()
+                        sleep(5)
+                    else:
+                        raise CameraException("Giving up! Please start over!", False)
+                else:
+                   raise e
+
+            # Measure used time and sleep a second if too fast 
+            toc = clock() - tic
+            if toc < 1.0:
+                sleep(1.0 - toc)
+
+        # Show pictures for 10 seconds
+        self.display.clear()
+        self.display.show_picture(output_filename, size, (0,0))
+        self.display.apply()
+        sleep(self.display_time)
+
+        # Reenable lamp
+        self.gpio.set_output(self.lamp_channel, 1)
 
     def take_picture(self):
         """Implements the picture taking routine"""
