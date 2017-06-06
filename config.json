@@ -1,0 +1,39 @@
+{
+  "display":{
+    "window_name": "FotoBox",
+    "fullscreen": true,
+    "window_size": [800,600],
+    "hide_mouse": true
+  },
+  "camera": {
+
+  },
+  "pictures": {
+    "save_dir": "/home/pi/fotobox",
+    "basename": "%Y-%m-%d/pic",
+    "suffix": ".jpg",
+    "count_width": 5,
+    "take": {
+      "time_countdown": 3,
+      "time_show_image": 10
+    },
+    "slideshow": {
+      "enabled": false,
+      "time_show_image": 5
+    }
+
+  },
+  "gpio": {
+    "input_channels": {
+      "trigger": 16,
+      "shutdown": 18
+    },
+    "output_channels":{
+      "lamp": 8
+    }
+  },
+  "messages": {
+    "interact": "Press left mouse button!",
+    "no_camera": "No Camera detected! Press S to search."
+  }
+}

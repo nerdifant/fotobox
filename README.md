@@ -1,10 +1,11 @@
-# photobooth
+# FotoBox
 A Raspberry-Pi powered photobooth using gPhoto 2.
 
 ## Description
 Python application to build your own photobooth using a [Raspberry Pi](https://www.raspberrypi.org/), [gPhoto2](http://gphoto.sourceforge.net/) and [pygame](https://www.pygame.org).
 
-The code was developed from scratch but inspired by the following tutorials/projects:
+The code was inspired by the following tutorials/projects:
+* https://github.com/reuterbal/photobooth
 * http://www.instructables.com/id/Raspberry-Pi-photo-booth-controller/
 * http://www.drumminhands.com/2014/06/15/raspberry-pi-photo-booth/
 * https://www.renesasse.de/diy-die-eigene-photo-booth-box/
@@ -17,9 +18,9 @@ The following is required for running this photobooth application. I used the ve
 * [Python](https://www.python.org) (2.7.3)
 * [Pygame](https://www.pygame.org) (1.9.1)
 * [Pillow](http://pillow.readthedocs.org) (2.8.1)
-* [gPhoto](http://gphoto.sourceforge.net/) (2.5.6 or later) or [OpenCV](http://opencv.org)
+* [gPhoto](http://gphoto.sourceforge.net/) (2.5.6 or later)
+* [Piggyphoto](https://github.com/alexdu/piggyphoto) or [gphoto2-cffi](https://github.com/jbaiter/gphoto2-cffi)
 * Optional: [RPi.GPIO](https://pypi.python.org/pypi/RPi.GPIO) (0.5.11)
-* Optional: [gphoto2-cffi](https://github.com/jbaiter/gphoto2-cffi) or [Piggyphoto](https://github.com/alexdu/piggyphoto)
 
 RPi.GPIO is necessary to use external buttons as a trigger but it works just fine without. Triggering is then only possible using touch screen / mouse or key 'c'.
 
@@ -29,10 +30,10 @@ RPi.GPIO is necessary to use external buttons as a trigger but it works just fin
 * Optional: External button that closes GPIO23 (pin 16) and GND.
 
 ## Usage
-Simply download `photobooth.py` or clone the repository and run it.
+Simply download or clone the repository and run the `fotobox.py`.
 It opens the GUI, prints the features of the connected camera, e.g.,
 ```
-$ ./photobooth.py 
+$ ./fotobox.py
 Abilities for camera             : Canon EOS 500D
 Serial port support              : no
 USB support                      : yes
@@ -50,10 +51,11 @@ and waits for you to hit the button to take pictures.
 Available actions:
 
 * Press `q`: Exit the application
+* Press `s`: Search the camera (if it wasn't found on startup)
 * Press `c`: Take four pictures, arrange them in a grid and display them for some seconds.
 * Hit a switch that closes GPIO23 (Pin 16) and GND: Take four pictures, arrange them in a grid and display them for some seconds.
 * Click anywhere on the screen: Take four pictures, arrange them in a grid and display them for some seconds.
- 
+
 All pictures taken are stored in a subfolder of the current working directory, named `YYYY-mm-dd` after the current date. Existing files are not overwritten.
 
 ## Installation
@@ -75,7 +77,7 @@ A brief description on how to set-up a Raspberry Pi to use this photobooth softw
 4. Run `sudo apt-get update` and `sudo apt-get upgrade` to upgrade all installed software.
 
 5. Install any additionally required software:
-  * Pillow: 
+  * Pillow:
 
     ```
     sudo apt-get install python-dev python-pip libjpeg8-dev
@@ -113,9 +115,9 @@ A brief description on how to set-up a Raspberry Pi to use this photobooth softw
    ```
    git clone https://github.com/reuterbal/photobooth
    ```
-   and run `photobooth.py`
+   and run `fotobox.py`
 
-8. Optional but highly recommended, as it improves performance significantly: install some Python bindings for gPhoto2. For that, either [Piggyphoto](https://github.com/alexdu/piggyphoto) or [gphoto2-cffi](https://github.com/jbaiter/gphoto2-cffi) can be used. At the moment, Piggyphoto doesn't allow to disable the sensor while idle, so gphoto2-cffi is preferred.
+8. Install some Python bindings for gPhoto2. For that, either [Piggyphoto](https://github.com/alexdu/piggyphoto) or [gphoto2-cffi](https://github.com/jbaiter/gphoto2-cffi) can be used. At the moment, Piggyphoto doesn't allow to disable the sensor while idle, so gphoto2-cffi is preferred.
 
    8.1 Installing gphoto2-cffi:
    Install [cffi](https://bitbucket.org/cffi/cffi)
@@ -133,27 +135,23 @@ A brief description on how to set-up a Raspberry Pi to use this photobooth softw
    8.2 Install Piggyphoto:
    Download [Piggyphoto](https://github.com/alexdu/piggyphoto) and put the folder `piggyphoto` into the Photobooth-directory.
 
-9. Optionally make the software run automatically on startup. To do that, you must simply add a corresponding line in the autostart file of LXDE, which can be found at `~/.config/lxsession/LXDE-pi/autostart`. Assuming you cloned the Photobooth repository into `/home/pi/photobooth`, add the following line into the autostart-file:
+9. Optionally make the software run automatically on startup. To do that, you must simply add a corresponding line in the autostart file of LXDE, which can be found at `~/.config/lxsession/LXDE-pi/autostart`. Assuming you cloned the Photobooth repository into `/home/pi/fotobox`, add the following line into the autostart-file:
    ```
-   lxterminal -e "/home/pi/photobooth/photobooth.sh set-time"
+   lxterminal -e "python /home/pi/fotobox/fotobox.py"
    ```
    For this to work you must install `gnome-control-center` by running `sudo apt-get install gnome-control-center` (Unfortunately, this brings along a lot of dependencies - however, I haven't found any lightweight alternative that would allow to simply set date and time using the touch screen).
 
-10. Alternatively, you can also add a Desktop shortcut. Create a file `/home/pi/Desktop/Photobooth.desktop` and enter the following:
+10. Alternatively, you can also add a Desktop shortcut. Create a file `/home/pi/Desktop/FotoBox.desktop` and enter the following:
    ```
    [Desktop Entry]
    Encoding=UTF-8
    Type=Application
-   Name=Photobooth
-   Exec=lxterminal -e /home/pi/photobooth/photobooth.sh set-time
+   Name=FotoBox
+   Exec=lxterminal -e "python /home/pi/fotobox/fotobox.py"
    ```
 
 ## Modifications
-In the beginning of `photobooth.py` a number of config options are available. Change them to your liking.
-
-The GUI-class is separated from the entire functionality. I'm using Pygame because it's so simple to use. Feel free to replace it by your favorite library.
-
-Instead of gPhoto2 you can also use OpenCV to capture pictures. This is the preferred way if you want to use a webcam and is particularly useful for debugging on a different machine. For that you must install OpenCV and its Python bindings (run `sudo apt-get install python-opencv`) and then change the `CameraModule`: edit `photobooth.py` and replace `Camera_gphoto as CameraModule` by `Camera_cv as CameraModule`.
+To do.
 
 ## License
-I provide this code under AGPL v3. See [LICENSE](https://github.com/reuterbal/photobooth/blob/master/LICENSE).
+I provide this code under AGPL v3. See [LICENSE](https://github.com/nerdifant/fotobox/blob/master/LICENSE).

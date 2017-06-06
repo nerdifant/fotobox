@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # Created by br _at_ re-web _dot_ eu, 2015
+# Modified by ferdinand _at_ zickner _dot_ de, 2017
 
 from __future__ import division
-
+from events import Event
 import pygame
 
 try:
@@ -10,30 +11,30 @@ try:
 except ImportError:
     import pygame.event as EventModule
 
-from events import Event
 
 class GuiException(Exception):
     """Custom exception class to handle GUI class errors"""
 
 class GUI_PyGame:
-    """A GUI class using PyGame"""
+    def __init__(self, config):
+        self.config = config
 
-    def __init__(self, name, size, hide_mouse=True):
-        # Call init routines
+        # Initialize PyGame
         pygame.init()
-        if hasattr(EventModule, 'init'):
-            EventModule.init()
+        EventModule.init()
 
-        # Window name
-        pygame.display.set_caption(name)
+        # Set window name
+        pygame.display.set_caption(self.config["window_name"])
 
         # Hide mouse cursor
-        if hide_mouse:
-            pygame.mouse.set_cursor(*pygame.cursors.load_xbm('transparent.xbm','transparent.msk'))
+        if self.config["hide_mouse"]:
+            pygame.mouse.set_cursor(*pygame.cursors.load_xbm('img/mouse/transparent.xbm','img/mouse/transparent.msk'))
 
-        # Store screen and size
-        self.size = size
-        self.screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
+        # Store screen
+        if self.config["fullscreen"]:
+            self.screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
+        else:
+            self.screen = pygame.display.set_mode(self.config["window_size"])
 
         # Clear screen
         self.clear()
@@ -49,7 +50,7 @@ class GUI_PyGame:
         pygame.display.update()
 
     def get_size(self):
-        return self.size
+        return pygame.display.get_surface().get_size()
 
     def trigger_event(self, event_channel):
         EventModule.post(EventModule.Event(pygame.USEREVENT, channel=event_channel))
@@ -57,7 +58,7 @@ class GUI_PyGame:
     def show_picture(self, filename, size=(0,0), offset=(0,0), flip=False):
         # Use window size if none given
         if size == (0,0):
-            size = self.size
+            size = self.get_size()
         try:
             # Load image from file
             image = pygame.image.load(filename)
@@ -83,7 +84,7 @@ class GUI_PyGame:
         # Choose font
         font = pygame.font.Font(None, 144)
         # Wrap and render text
-        wrapped_text, text_height = self.wrap_text(msg, font, self.size)
+        wrapped_text, text_height = self.wrap_text(msg, font, self.get_size())
         rendered_text = self.render_text(wrapped_text, text_height, 1, 1, font, color, bg, transparency, outline)
 
         self.surface_list.append((rendered_text, (0,0)))
@@ -97,8 +98,8 @@ class GUI_PyGame:
         offset = ( (size[0] - text_size[0]) // 2, (size[1] - text_size[1]) // 2 )
 
         # Create Surface object and fill it with the given background
-        surface = pygame.Surface(self.size) 
-        surface.fill(bg) 
+        surface = pygame.Surface(self.get_size())
+        surface.fill(bg)
 
         # Render text
         rendered_text = font.render(text, 1, color)
@@ -133,9 +134,9 @@ class GUI_PyGame:
                 # Put words on the line as long as they fit
                 for word in words:
                     test_line = accumulated_line + word + " "
-                    # Build the line while the words fit.   
+                    # Build the line while the words fit.
                     if font.size(test_line)[0] < size[0]:
-                        accumulated_line = test_line 
+                        accumulated_line = test_line
                     else:
                         # Start a new line
                         line_height = font.size(accumulated_line)[1]
@@ -144,7 +145,7 @@ class GUI_PyGame:
                         else:
                             accumulated_height += line_height
                             final_lines.append(accumulated_line)
-                            accumulated_line = word + " " 
+                            accumulated_line = word + " "
                 # Finish requested_line
                 line_height = font.size(accumulated_line)[1]
                 if accumulated_height + line_height > size[1]:
@@ -154,7 +155,7 @@ class GUI_PyGame:
                     final_lines.append(accumulated_line)
             # Line fits as it is
             else:
-                accumulated_height += font.size(requested_line)[1] 
+                accumulated_height += font.size(requested_line)[1]
                 final_lines.append(requested_line)
 
         # Check height of wrapped text
@@ -168,25 +169,25 @@ class GUI_PyGame:
         if valign == 0:     # top aligned
             voffset = 0
         elif valign == 1:   # centered
-            voffset = int((self.size[1] - text_height) / 2)
+            voffset = int((self.get_size()[1] - text_height) / 2)
         elif valign == 2:   # bottom aligned
-            voffset = self.size[1] - text_height
+            voffset = self.get_size()[1] - text_height
         else:
             raise GuiException("Invalid valign argument: " + str(valign))
 
         # Create Surface object and fill it with the given background
-        surface = pygame.Surface(self.size) 
-        surface.fill(bg) 
+        surface = pygame.Surface(self.get_size())
+        surface.fill(bg)
 
         # Blit one line after another
-        accumulated_height = 0 
-        for line in text: 
+        accumulated_height = 0
+        for line in text:
             maintext = font.render(line, 1, color)
             shadow = font.render(line, 1, outline)
             if halign == 0:     # left aligned
                 hoffset = 0
             elif halign == 1:   # centered
-                hoffset = (self.size[0] - maintext.get_width()) / 2
+                hoffset = (self.get_size()[0] - maintext.get_width()) / 2
             elif halign == 2:   # right aligned
                 hoffset = rect.width - maintext.get_width()
             else:
@@ -209,13 +210,13 @@ class GUI_PyGame:
         return surface
 
     def convert_event(self, event):
-        if event.type == pygame.QUIT: 
+        if event.type == pygame.QUIT:
             return True, Event(0, 0)
-        elif event.type == pygame.KEYDOWN: 
+        elif event.type == pygame.KEYDOWN:
             return True, Event(1, event.key)
-        elif event.type == pygame.MOUSEBUTTONUP: 
+        elif event.type == pygame.MOUSEBUTTONUP:
             return True, Event(2, (event.button, event.pos))
-        elif event.type >= pygame.USEREVENT: 
+        elif event.type >= pygame.USEREVENT:
             return True, Event(3, event.channel)
         else:
             return False, ''
