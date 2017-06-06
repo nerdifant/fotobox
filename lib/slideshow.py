@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Created by br@re-web.eu, 2015
 
-from gui import GUI_PyGame as GuiModule
+from display import GUI_PyGame as GuiModule
 
 import os
 from datetime import datetime
