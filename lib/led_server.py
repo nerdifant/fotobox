@@ -143,6 +143,8 @@ class LED_ring(threading.Thread):
 
 def close(*args):
 	sock.close()
+	led._setRingColor(Color(0, 0, 0))
+	led.led.show()
 	led.close()
 	print "Closing LED server."
 	sys.exit(0)
