@@ -2,6 +2,7 @@
 # Created by ferdinand _at_ zickner _dot_ de, 2017
 
 from lib.camera import CameraException, Camera_gPhoto as CameraModule
+from lib.events import Rpi_GPIO as GPIO
 from lib.display import GUI_PyGame as GuiModule
 from lib.picture import PictureList
 from lib.slideshow import Slideshow
@@ -21,6 +22,7 @@ class FotoBox:
         self.config         = config
         self.display        = GuiModule(self.config["display"])
         self.pictures       = PictureList(self.config["pictures"])
+        self.gpio           = GPIO(self.handle_gpio, self.config["gpio"])
         self.camera         = CameraModule(self.config["camera"])
         self.led            = LED_client()
         self.check_camera()
@@ -52,14 +54,14 @@ class FotoBox:
             except Exception as e:
                 print('SERIOUS ERROR: ' + repr(e))
                 self.handle_exception("SERIOUS ERROR!")
-                self.teardown()
+                self.teardown(True)
 
     def take_single_picture(self):
         """Implements the picture taking routine"""
         # Show pose message
         self.led.set_mode("countdown")
         self.display.clear()
-        self.display.show_message("POSE!\n\nTaking a picture!");
+        #self.display.show_message("POSE!\n\nTaking a picture!");
         self.display.apply()
         sleep(4)
 
@@ -75,14 +77,14 @@ class FotoBox:
                 # On recoverable errors: display message and retry
                 if e.recoverable:
                     if remaining_attempts > 0:
-                        self.display.clear()
+
                         self.display.show_message(e.message)
                         self.display.apply()
                         sleep(5)
                     else:
                         raise CameraException("Giving up! Please start over!", False)
                 else:
-                   raise e
+                    raise e
 
         # Show picture
         self.display.clear()
@@ -91,12 +93,16 @@ class FotoBox:
         self.led.set_mode("finished")
         sleep(1)
 
-    def teardown(self):
+    def teardown(self, error=False):
         self.display.clear()
+        self.display.show_background()
         self.display.show_message("Shutting down...")
         self.display.apply()
+        if  not error:
+            self.led.set_mode("off")
         self.led.close()
         self.camera.close()
+        self.gpio.teardown()
         sleep(0.5)
         self.display.teardown()
         exit(0)
@@ -114,6 +120,8 @@ class FotoBox:
             self.handle_keypress(event.value)
         elif event.type == 2:
             self.handle_mousebutton(event.value[0], event.value[1])
+        elif event.type == 3:
+            self.handle_gpio_event(event.value)
 
     def handle_keypress(self, key):
         """Implements the actions for the different keypress events"""
@@ -133,9 +141,17 @@ class FotoBox:
         if key == 1:
             self.event_main_key()
 
+    def handle_gpio(self, channel):
+        if channel in self.config["gpio"]["input_channels"].values():
+            if channel == self.config["gpio"]["input_channels"]["shutdown"]:
+                print("Shutdown by GPIO")
+                self.teardown()
+
     def handle_exception(self, msg):
         """Displays an error message and returns"""
+        self.led.set_mode("error")
         self.display.clear()
+        self.display.show_background()
         print("Error: " + msg)
         self.display.show_message("ERROR:\n\n" + msg)
         self.display.apply()
@@ -144,7 +160,9 @@ class FotoBox:
     def check_camera(self):
         # Check for Camera
         while not self.camera.has_camera():
+            self.led.set_mode("no_camera")
             self.display.clear()
+            self.display.show_background()
             self.display.show_message(self.config["messages"]["no_camera"])
             self.display.apply()
 
@@ -152,7 +170,9 @@ class FotoBox:
             event = self.display.wait_for_event()
             self.handle_event(event)
 
+        self.led.set_mode("rainbow")
         self.display.clear()
+        self.display.show_background()
         self.display.apply()
 
 def main():

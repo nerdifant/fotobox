@@ -38,6 +38,7 @@ class GUI_PyGame:
 
         # Clear screen
         self.clear()
+        self.show_background()
         self.apply()
 
     def clear(self, color=(0,0,0)):
@@ -79,6 +80,9 @@ class GUI_PyGame:
         if flip:
             surface = pygame.transform.flip(surface, True, False)
         self.surface_list.append((surface, offset))
+
+    def show_background(self):
+        self.show_picture(self.config["background"])
 
     def show_message(self, msg, color=(0,0,0), bg=(230,230,230), transparency=True, outline=(245,245,245)):
         # Choose font

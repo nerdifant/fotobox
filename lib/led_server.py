@@ -43,12 +43,15 @@ class LED_ring(threading.Thread):
 		while not self.stopped:
 			if self.mode == 'countdown':
 				self.countdown(Color(0, 127, 0))
-			if self.mode == 'finished':
+			elif self.mode == 'finished':
 				self.rainbowRotateFill(Color(127, 0, 0))
 				self.flash(Color(0, 255, 0))
 				self.mode = 'rainbow'
-			if self.mode == 'rainbow':
+			elif self.mode == 'rainbow':
 				self.rainbow()
+			elif self.mode == 'off':
+				self._setRingColor(Color(0, 0, 0))
+				self.led.show()
 			else:
 				self.flash(Color(255, 0, 0), 1)
 
@@ -59,7 +62,7 @@ class LED_ring(threading.Thread):
 		self.mode = mode
 
 	def _setPixelColorCycle(self, pos, color, innerRing=True, outerRing=True):
-		pos = pos % self.numPixels
+		pos = (pos + 44) % self.numPixels
 		if innerRing and (pos % 4) == 0: ## Inner ring
 			self.led.setPixelColor(pos/4, color)
 		if outerRing and (pos % 3) == 0: ## Outer ring

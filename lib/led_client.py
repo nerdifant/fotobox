@@ -11,6 +11,7 @@ class LED_client:
             # Connect the socket to the port where the server is listening
             print >>sys.stderr, 'connecting to %s port %s' % server_address
             self.sock.connect(server_address)
+            self.set_mode("rainbow")
         except:
             print 'connecting to %s port %s failed!' % server_address
 

@@ -3,7 +3,8 @@
     "window_name": "FotoBox",
     "fullscreen": true,
     "window_size": [800,600],
-    "hide_mouse": true
+    "hide_mouse": true,
+    "background": "/home/pi/git/fotobox/img/background/lens.png"
   },
   "camera": {
 
@@ -25,11 +26,9 @@
   },
   "gpio": {
     "input_channels": {
-      "trigger": 16,
-      "shutdown": 18
+      "shutdown": 16
     },
     "output_channels":{
-      "lamp": 8
     }
   },
   "messages": {
