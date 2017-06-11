@@ -2,10 +2,10 @@
 # Created by ferdinand _at_ zickner _dot_ de, 2017
 
 from lib.camera import CameraException, Camera_gPhoto as CameraModule
-from lib.events import Rpi_GPIO as GPIO
 from lib.display import GUI_PyGame as GuiModule
 from lib.picture import PictureList
 from lib.slideshow import Slideshow
+from lib.led_client import LED_client
 
 from datetime import datetime
 from glob import glob
@@ -21,8 +21,8 @@ class FotoBox:
         self.config         = config
         self.display        = GuiModule(self.config["display"])
         self.pictures       = PictureList(self.config["pictures"])
-        self.gpio           = GPIO(self.handle_gpio, self.config["gpio"])
         self.camera         = CameraModule(self.config["camera"])
+        self.led            = LED_client()
         self.check_camera()
 
     def _run_plain(self):
@@ -57,9 +57,11 @@ class FotoBox:
     def take_single_picture(self):
         """Implements the picture taking routine"""
         # Show pose message
+        self.led.set_mode("countdown")
         self.display.clear()
         self.display.show_message("POSE!\n\nTaking a picture!");
         self.display.apply()
+        sleep(4)
 
         # Try each picture up to 3 times
         remaining_attempts = 3
@@ -86,14 +88,15 @@ class FotoBox:
         self.display.clear()
         self.display.show_picture(output_filename)
         self.display.apply()
+        self.led.set_mode("finished")
         sleep(1)
 
     def teardown(self):
         self.display.clear()
         self.display.show_message("Shutting down...")
         self.display.apply()
+        self.led.close()
         self.camera.close()
-        self.gpio.teardown()
         sleep(0.5)
         self.display.teardown()
         exit(0)
@@ -104,10 +107,6 @@ class FotoBox:
         else:
             self.camera.get_camera()
 
-    def handle_gpio(self, channel):
-        if channel in self.config["gpio"]["input_channels"].values():
-            self.display.trigger_event(channel)
-
     def handle_event(self, event):
         if event.type == 0:
             self.teardown()
@@ -115,8 +114,6 @@ class FotoBox:
             self.handle_keypress(event.value)
         elif event.type == 2:
             self.handle_mousebutton(event.value[0], event.value[1])
-        elif event.type == 3:
-            self.handle_gpio_event(event.value)
 
     def handle_keypress(self, key):
         """Implements the actions for the different keypress events"""
@@ -135,13 +132,6 @@ class FotoBox:
         # Take a picture
         if key == 1:
             self.event_main_key()
-
-    def handle_gpio_event(self, channel):
-        """Implements the actions taken for a GPIO event"""
-        if channel == self.config["gpio"]["input_channels"]["trigger"]:
-            self.event_main_key()
-        elif channel == self.config["gpio"]["input_channels"]["shutdown"]:
-            self.teardown()
 
     def handle_exception(self, msg):
         """Displays an error message and returns"""
