@@ -8,4 +8,11 @@ sudo python $PATH_FOTOBOX/lib/led_server.py > $PATH_FOTOBOX/log/led_server.log 2
 PID=$!
 
 python $PATH_FOTOBOX/fotobox.py > $PATH_FOTOBOX/log/fotobox.log 2> $PATH_FOTOBOX/log/fotobox.err
+RETURN=$?
+
 sudo kill $PID
+
+# Shutdown
+if [[ $RETURN -eq 12 ]]; then
+  sudo shutdown -h now
+fi

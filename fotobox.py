@@ -93,7 +93,7 @@ class FotoBox:
         self.led.set_mode("finished")
         sleep(1)
 
-    def teardown(self, error=False):
+    def teardown(self, error=False, system_shutdown=False):
         self.display.clear()
         self.display.show_background()
         self.display.show_message("Shutting down...")
@@ -105,7 +105,10 @@ class FotoBox:
         self.gpio.teardown()
         sleep(0.5)
         self.display.teardown()
-        exit(0)
+        if system_shutdown:
+            exit(12)
+        else:
+            exit(0)
 
     def event_main_key(self):
         if self.camera.has_camera():
@@ -145,7 +148,7 @@ class FotoBox:
         if channel in self.config["gpio"]["input_channels"].values():
             if channel == self.config["gpio"]["input_channels"]["shutdown"]:
                 print("Shutdown by GPIO")
-                self.teardown()
+                self.teardown(False, True)
 
     def handle_exception(self, msg):
         """Displays an error message and returns"""
