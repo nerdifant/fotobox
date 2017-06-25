@@ -7,28 +7,28 @@ import ssl
 import ccnet
 import seafile
 
-class SeaFile:
-    def __init__(self, config):
-        self.url = config['url']
-        self.auth = config['auth']
-        self.conf_dir = config['conf_dir']
-        self.context = ssl._create_unverified_context()
+class SeafileClient:
+    def __init__(self, configs):
+        for config in configs:
+            self.url = config['url']
+            self.auth = config['auth']
+            self.conf_dir = config['conf_dir']
+            self.context = ssl._create_unverified_context()
 
-        # Post seafile email/password to obtain auth token.
-        data = urllib.urlencode(self.auth)
-        try:
-            self.token = json.loads(self.urlopen("auth-token/", data))['token']
-        except:
-            print("[Error]: Connection to seafile server failed.")
+            # Post seafile email/password to obtain auth token.
+            data = urllib.urlencode(self.auth)
+            try:
+                self.token = json.loads(self.urlopen("auth-token/", data))['token']
+            except:
+                print("[Error]: Connection to seafile server failed.")
 
-        # Test connection and get repo
-        if hasattr(self, 'token'):
-            self.repo = self._get_repo(config['repo'])
-            if self.repo:
-                self.shared_link_expire = config['shared_link_expire']
-                self.shared_link_password = config['shared_link_password']
-
-        return None
+            # Test connection and get repo
+            if hasattr(self, 'token'):
+                self.repo = self._get_repo(config['repo'])
+                if self.repo:
+                    self.shared_link_expire = config['shared_link_expire']
+                    self.shared_link_password = config['shared_link_password']
+                    return
 
     def urlopen(self, path, data = None, reqType = False):
         req = urllib2.Request(self.url + "/api2/" + path, data)
@@ -76,12 +76,10 @@ def main():
     with open('../config.json', 'r') as f:
         config = json.load(f)
     if config:
-        for seaf_conf in config["seafile-servers"]:
-            # Test Seafile
-            seafile = SeaFile(seaf_conf)
-            if seafile.ping():
-                print seafile.status()
-                print seafile.get_share_link("/2017-06-24/pic00004.jpg")
+        seafile = SeafileClient(config["seafile-servers"])      # Uses the first working server
+        if seafile.ping():
+            print seafile.status()
+            print seafile.get_share_link("/2017-06-24/pic00004.jpg")
         return 0
     else:
         print("Error: Read config failed!")
