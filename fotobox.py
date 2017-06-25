@@ -7,12 +7,14 @@ from lib.display import GUI_PyGame as GuiModule
 from lib.picture import PictureList
 from lib.slideshow import Slideshow
 from lib.led_client import LED_client
+from lib.seafile_client import SeafileClient
 
 from datetime import datetime
 from glob import glob
 from sys import exit
 from time import sleep, clock
 from PIL import Image
+from threading import Thread
 import os
 import json
 
@@ -25,6 +27,7 @@ class FotoBox:
         self.gpio           = GPIO(self.handle_gpio, self.config["gpio"])
         self.camera         = CameraModule(self.config["camera"])
         self.led            = LED_client()
+        self.seafile        = SeafileClient(self.config["seafile-servers"])
         self.check_camera()
 
     def _run_plain(self):
@@ -91,7 +94,26 @@ class FotoBox:
         self.display.show_picture(output_filename)
         self.display.apply()
         self.led.set_mode("finished")
+        if self.seafile.ping():
+            t = Thread(target = self.show_download_link, args = (output_filename, ))
+            t.start()
         sleep(1)
+
+    def show_download_link(self, filename):
+        print("[QR-Code]: Creating link for " + filename)
+        link = self.seafile.wait_and_get_link(filename.replace(self.config["pictures"]["save_dir"], "", 1))
+        print("[QR-Code]: " + link)
+
+        ## Check, if newer picture is available
+        if filename == self.pictures.get_last():
+            self.display.clear()
+            self.display.show_picture(filename)
+            self.display.show_message(self.config["messages"]["read_qrcode"] + "\n" + self.config["messages"]["interact"])
+            self.display.show_qrcode(link)
+            self.display.apply()
+        else:
+            print("[QR-Code]: Newer image found! ... Canceled.")
+
 
     def teardown(self, error=False, system_shutdown=False):
         self.display.clear()

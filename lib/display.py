@@ -5,6 +5,7 @@
 from __future__ import division
 from events import Event
 import pygame
+import pyqrcode
 
 try:
     import pygame.fastevent as EventModule
@@ -86,12 +87,20 @@ class GUI_PyGame:
 
     def show_message(self, msg, color=(0,0,0), bg=(230,230,230), transparency=True, outline=(245,245,245)):
         # Choose font
-        font = pygame.font.Font(None, 144)
+        font = pygame.font.Font(None, self.config["font_size"])
         # Wrap and render text
         wrapped_text, text_height = self.wrap_text(msg, font, self.get_size())
-        rendered_text = self.render_text(wrapped_text, text_height, 1, 1, font, color, bg, transparency, outline)
-
+        rendered_text = self.render_text(wrapped_text, text_height, 3, 3, font, color, bg, transparency, outline)
         self.surface_list.append((rendered_text, (0,0)))
+
+    def show_qrcode(self, text, module_color=(0,0,0,0), background=(255,255,255,255)):
+        scale = self.config["qr"]["scale"]
+        filename = self.config["qr"]["filename"]
+        url = pyqrcode.create(text)
+        url.png(filename, scale=scale, module_color=module_color, background=background, quiet_zone=1)
+        img_size = url.get_png_size(scale=scale, quiet_zone=1)
+        offset = tuple(a-b-c for a,b,c in zip(self.get_size(), (50,50), (img_size, img_size)))
+        self.show_picture(filename, size=(img_size,img_size), offset=offset)
 
     def show_button(self, text, pos, size=(0,0), color=(230,230,230), bg=(0,0,0), transparency=True, outline=(230,230,230)):
         # Choose font
@@ -176,6 +185,8 @@ class GUI_PyGame:
             voffset = int((self.get_size()[1] - text_height) / 2)
         elif valign == 2:   # bottom aligned
             voffset = self.get_size()[1] - text_height
+        elif valign == 3:   # bottom aligned - 50 px
+            voffset = self.get_size()[1] - text_height - 50
         else:
             raise GuiException("Invalid valign argument: " + str(valign))
 
@@ -194,6 +205,8 @@ class GUI_PyGame:
                 hoffset = (self.get_size()[0] - maintext.get_width()) / 2
             elif halign == 2:   # right aligned
                 hoffset = rect.width - maintext.get_width()
+            elif halign == 3:   # right aligned + 50 px
+                hoffset = 50
             else:
                 raise GuiException("Invalid halign argument: " + str(justification))
             pos = (hoffset, voffset + accumulated_height)

@@ -6,6 +6,7 @@ import json
 import ssl
 import ccnet
 import seafile
+from time import sleep
 
 class SeafileClient:
     def __init__(self, configs):
@@ -57,19 +58,30 @@ class SeafileClient:
                 return repo
         return False
 
-    def get_share_link(self, path_file):
+    def get_share_link(self, filename):
         ## Create Link
-        values = {'p': path_file}
+        values = {'p': filename}
         if self.shared_link_expire > 0: values["expire"] = self.shared_link_expire    # days
         if self.shared_link_password: values["password"] = self.shared_link_password
         data = urllib.urlencode(values)
-        self.urlopen("repos/" + self.repo["id"] + "/file/shared-link/", data, "PUT")
+        resp = self.urlopen("repos/" + self.repo["id"] + "/file/shared-link/", data, "PUT")
+        if resp: print resp.info()
 
         ## Get Link
         fileshares = json.loads(self.urlopen("shared-links/"))["fileshares"]
         for f in fileshares:
-            if f["repo_id"] == self.repo["id"] and f["path"] == path_file:
+            if f["repo_id"] == self.repo["id"] and f["path"] == filename:
                 return self.url + "/f/" + f["token"]
+        return False
+
+    def wait_and_get_link(self, filename, time_in_seconds = 20):
+        for i in range(time_in_seconds * 2):
+            sleep(1)
+            if self.status() == "synchronized":
+                link = self.get_share_link(filename)
+                if link:
+                    return link
+            sleep(0.5)
 
 
 def main():
@@ -79,7 +91,7 @@ def main():
         seafile = SeafileClient(config["seafile-servers"])      # Uses the first working server
         if seafile.ping():
             print seafile.status()
-            print seafile.get_share_link("/2017-06-24/pic00004.jpg")
+            print seafile.get_share_link("/2017-06-24/pic00006.jpg")
         return 0
     else:
         print("Error: Read config failed!")

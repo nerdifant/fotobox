@@ -4,7 +4,12 @@
     "fullscreen": true,
     "window_size": [800,600],
     "hide_mouse": true,
-    "background": "/home/pi/git/fotobox/img/background/lens.png"
+    "background": "/home/pi/git/fotobox/img/background/lens.png",
+    "font_size": 96,
+    "qr":{
+      "filename": "/dev/shm/qrcode.png",
+      "scale": 3
+    }
   },
   "camera": {
 
@@ -32,7 +37,8 @@
     }
   },
   "messages": {
-    "interact": "Press left mouse button!",
+    "read_qrcode": "Scan the QR-Code too download the image.",
+    "interact": "Please press the button to take a picture!",
     "no_camera": "No Camera detected! Press S to search."
   },
   "seafile-servers": [{
