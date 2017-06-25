@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 # Created by br@re-web.eu, 2015
 
 from display import GUI_PyGame as GuiModule

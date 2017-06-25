@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 # Created by br@re-web.eu, 2015
 # Modified by ferdinand _at_ zickner _dot_ de, 2017
 

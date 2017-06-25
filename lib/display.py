@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # Created by br _at_ re-web _dot_ eu, 2015
 # Modified by ferdinand _at_ zickner _dot_ de, 2017
 

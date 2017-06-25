@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 # Created by br _at_ re-web _dot_ eu, 2015
 
 try:

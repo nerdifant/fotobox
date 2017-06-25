@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # Created by ferdinand _at_ zickner _dot_ de, 2017
 
 from lib.camera import CameraException, Camera_gPhoto as CameraModule

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 # Created by ferdinand _at_ zickner _dot_ de, 2017
 
 from datetime import datetime

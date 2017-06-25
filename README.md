@@ -1,4 +1,4 @@
-# FotoBox
+﻿# FotoBox
 A Raspberry-Pi powered photobooth using gPhoto 2.
 
 ## Description
