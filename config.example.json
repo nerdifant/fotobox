@@ -41,6 +41,7 @@
         "username": "fotobox@cloud.seafile.com",
         "password": "secret"
       },
+      "conf_dir": "/home/pi/.ccnet/",
       "repo": "FotoBox",
       "shared_link_expire": 2,
       "shared_link_password": false
