@@ -34,5 +34,15 @@
   "messages": {
     "interact": "Press left mouse button!",
     "no_camera": "No Camera detected! Press S to search."
-  }
+  },
+  "seafile-servers": [{
+      "url": "https://cloud.seafile.com",
+      "auth": {
+        "username": "fotobox@cloud.seafile.com",
+        "password": "secret"
+      },
+      "repo": "FotoBox",
+      "shared_link_expire": 2,
+      "shared_link_password": false
+    }]
 }
