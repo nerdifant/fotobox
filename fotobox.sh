@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PATH_FOTOBOX="/home/pi/git/fotobox"
-LOG_DATE"date +%y%m%d-%H%M"
+LOG_DATE=$(date +%y%m%d-%H%M)
 cd $PATH_FOTOBOX
 mkdir -p $PATH_FOTOBOX/log
 
