@@ -7,7 +7,7 @@ from lib.events import Rpi_GPIO as GPIO
 from lib.display import GUI_PyGame as GuiModule
 from lib.picture import PictureList
 from lib.slideshow import Slideshow
-from lib.led_client import LED_client
+from lib.led import LED
 from lib.seafile_client import SeafileClient
 
 from datetime import datetime
@@ -27,7 +27,8 @@ class FotoBox:
         self.pictures       = PictureList(self.config["pictures"])
         self.gpio           = GPIO(self.handle_gpio, self.config["gpio"])
         self.camera         = CameraModule(self.config["camera"])
-        self.led            = LED_client()
+        self.led            = LED()
+        self.led.start()
         self.seafile        = SeafileClient(self.config["seafile-servers"])
         self.check_camera()
 

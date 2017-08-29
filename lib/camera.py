@@ -4,6 +4,8 @@
 
 import subprocess
 import os
+import pwd
+import grp
 
 gphoto2cffi_enabled = False
 piggyphoto_enabled = False
@@ -40,6 +42,8 @@ class Camera_gPhoto:
         self.config = config
         self.c = None
         self.get_camera()
+        self.uid = pwd.getpwnam("pi").pw_uid
+        self.gid = grp.getgrnam("pi").gr_gid
 
     def get_camera(self):
         # Print the capabilities of the connected camera
@@ -101,6 +105,7 @@ class Camera_gPhoto:
         else:
             print("gphoto2: " + filename)
             self.call_gphoto("--capture-image-and-download", filename)
+        os.chown(filename, self.uid, self.gid)
         return filename
 
     def _save_picture(self, filename, data):

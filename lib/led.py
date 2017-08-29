@@ -1,12 +1,7 @@
-﻿# NeoPixel library strandtest example
-# Author: Tony DiCola (tony@tonydicola.com)
-#
-# Direct port of the Arduino NeoPixel library strandtest example.  Showcases
-# various animations on a strip of NeoPixels.
-#
 # https://tutorials-raspberrypi.de/raspberry-pi-ws2812-ws2811b-rgb-led-streifen-steuern/
 # https://github.com/jgarff/rpi_ws281x
 
+from time import sleep
 from functools import partial
 from signal import *
 from neopixel import *
@@ -16,7 +11,7 @@ import socket
 import sys
 import atexit
 
-class LED_ring(threading.Thread):
+class LED(threading.Thread):
 	def __init__(self):
 		# LED strip configuration:
 		self.led_count_in = 24		# Number of LED pixels in the inner ring.
@@ -56,9 +51,11 @@ class LED_ring(threading.Thread):
 				self.flash(Color(255, 0, 0), 1)
 
 	def close(self):
+		self._setRingColor(Color(0, 0, 0)) # All lights off
+		self.led.show()
 		self.stopped = True
 
-	def set(self, mode):
+	def set_mode(self, mode):
 		self.mode = mode
 
 	def _setPixelColorCycle(self, pos, color, innerRing=True, outerRing=True):
@@ -144,57 +141,17 @@ class LED_ring(threading.Thread):
 			self.led.show()
 			time.sleep(0.2)
 
-def close(*args):
-	sock.close()
-	led._setRingColor(Color(0, 0, 0))
-	led.led.show()
-	led.close()
-	print "Closing LED server."
-	sys.exit(0)
 
 # Main program logic follows:
 if __name__ == '__main__':
+    # Starting LED ring
+    led = LED()
+    led.start()
 
-	for sig in (SIGABRT, SIGILL, SIGINT, SIGSEGV, SIGTERM):
-	    signal(sig, close)
+    led.set_mode("countdown")
+    sleep(10)
 
-	# Create a TCP/IP socket
-	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    led.set_mode("finished")
+    sleep(10)
 
-	# Bind the socket to the port
-	server_address = ('localhost', 10000)
-	print 'Starting up on %s port %s' % server_address
-	sock.bind(server_address)
-
-	# Listen for incoming connections
-	sock.listen(1)
-
-	# Starting LED ring
-	led = LED_ring()
-	led.start()
-
-	#print ('Press Ctrl-C to quit.')
-	while True:
-		# Wait for a connection
-		print 'waiting for a connection'
-		connection, client_address = sock.accept()
-		try:
-			print 'connection from', client_address
-
-			# Receive the data in small chunks and retransmit it
-			while True:
-				data = connection.recv(16)
-				print 'received "%s"' % data
-				if data:
-					print 'sending data back to the client'
-					connection.sendall(data)
-					led.set(data)
-				else:
-					print >>sys.stderr, 'no more data from', client_address
-					break
-
-		finally:
-			# Clean up the connection
-			connection.close()
-
-	led.stop()
+    led.close()

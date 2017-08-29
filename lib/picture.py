@@ -5,6 +5,8 @@ from datetime import datetime
 from PIL import Image
 from glob import glob
 import os
+import pwd
+import grp
 
 class PictureList:
     """A simple helper class.
@@ -22,11 +24,14 @@ class PictureList:
         self.basename = config["save_dir"] + "/" + datetime.now().strftime(config["basename"])
         self.suffix = config["suffix"]
         self.count_width = config["count_width"]
+        self.uid = pwd.getpwnam("pi").pw_uid
+        self.gid = grp.getgrnam("pi").gr_gid
 
         # Ensure directory exists
         dirname = os.path.dirname(self.basename)
         if not os.path.exists(dirname):
             os.makedirs(dirname)
+            os.chown(dirname, self.uid, self.gid)
 
         # Find existing files
         count_pattern = "[0-9]" * self.count_width
