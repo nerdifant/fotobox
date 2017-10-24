@@ -41,7 +41,8 @@ class LED(threading.Thread):
 			elif self.mode == 'finished':
 				self.rainbowRotateFill(Color(127, 0, 0))
 				self.flash(Color(0, 255, 0))
-				self.mode = 'rainbow'
+				if self.mode == 'finished':
+					self.mode = 'rainbow'
 			elif self.mode == 'rainbow':
 				self.rainbow()
 			elif self.mode == 'off':
@@ -57,6 +58,9 @@ class LED(threading.Thread):
 
 	def set_mode(self, mode):
 		self.mode = mode
+
+	def get_mode(self):
+		return self.mode
 
 	def _setPixelColorCycle(self, pos, color, innerRing=True, outerRing=True):
 		pos = (pos + 44) % self.numPixels
