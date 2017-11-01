@@ -42,6 +42,7 @@
     "no_camera": "No Camera detected! Press S to search."
   },
   "seafile-servers": [{
+      "enabled": false,
       "url": "https://cloud.seafile.com",
       "auth": {
         "username": "fotobox@cloud.seafile.com",

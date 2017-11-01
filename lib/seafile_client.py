@@ -11,25 +11,27 @@ from time import sleep
 class SeafileClient:
     def __init__(self, configs):
         for config in configs:
+            self.enabled = config['enabled']
             self.url = config['url']
             self.auth = config['auth']
             self.conf_dir = config['conf_dir']
             self.context = ssl._create_unverified_context()
 
-            # Post seafile email/password to obtain auth token.
-            data = urllib.urlencode(self.auth)
-            try:
-                self.token = json.loads(self.urlopen("auth-token/", data))['token']
-            except:
-                print("[Error]: Connection to seafile server failed.")
+            if self.enabled:
+                # Post seafile email/password to obtain auth token.
+                data = urllib.urlencode(self.auth)
+                try:
+                    self.token = json.loads(self.urlopen("auth-token/", data))['token']
+                except:
+                    print("[Error]: Connection to seafile server failed.")
 
-            # Test connection and get repo
-            if hasattr(self, 'token'):
-                self.repo = self._get_repo(config['repo'])
-                if self.repo:
-                    self.shared_link_expire = config['shared_link_expire']
-                    self.shared_link_password = config['shared_link_password']
-                    return
+                    # Test connection and get repo
+                    if hasattr(self, 'token'):
+                        self.repo = self._get_repo(config['repo'])
+                        if self.repo:
+                            self.shared_link_expire = config['shared_link_expire']
+                            self.shared_link_password = config['shared_link_password']
+                            return
 
     def urlopen(self, path, data = None, reqType = False):
         req = urllib2.Request(self.url + "/api2/" + path, data)
@@ -40,7 +42,10 @@ class SeafileClient:
         return resp.read()
 
     def ping(self):
-        return "pong" == json.loads(self.urlopen("auth/ping/"))
+        if self.enabled:
+            return "pong" == json.loads(self.urlopen("auth/ping/"))
+        else:
+            return False
 
     def status(self):
         pool = ccnet.ClientPool(self.conf_dir)
