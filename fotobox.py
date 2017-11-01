@@ -107,7 +107,7 @@ class FotoBox:
         print("[QR-Code]: " + link)
 
         ## Check, if newer picture is available
-        if filename == self.pictures.get_last():
+        if self.led.get_mode() != "countdown" and filename == self.pictures.get_last():
             self.display.clear()
             self.display.show_picture(filename)
             self.display.show_message(self.config["messages"]["read_qrcode"] + "\n" + self.config["messages"]["interact"])
@@ -165,7 +165,7 @@ class FotoBox:
     def handle_mousebutton(self, key, pos):
         """Implements the actions for the different mousebutton events"""
         # Take a picture
-        if key == 1:
+        if key < 10:
             self.event_main_key()
 
     def handle_gpio(self, channel):
