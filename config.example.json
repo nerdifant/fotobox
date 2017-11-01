@@ -12,7 +12,6 @@
     }
   },
   "camera": {
-
   },
   "pictures": {
     "save_dir": "/home/pi/fotobox",
@@ -27,13 +26,14 @@
       "enabled": false,
       "time_show_image": 5
     }
-
   },
   "gpio": {
     "input_channels": {
       "shutdown": 16
     },
     "output_channels":{
+      "led0": 17,
+      "led1": 18
     }
   },
   "messages": {

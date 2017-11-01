@@ -27,8 +27,6 @@ class FotoBox:
         self.pictures       = PictureList(self.config["pictures"])
         self.gpio           = GPIO(self.handle_gpio, self.config["gpio"])
         self.camera         = CameraModule(self.config["camera"])
-        self.led            = LED()
-        self.led.start()
         self.seafile        = SeafileClient(self.config["seafile-servers"])
         self.check_camera()
 
@@ -64,7 +62,7 @@ class FotoBox:
     def take_single_picture(self):
         """Implements the picture taking routine"""
         # Show pose message
-        self.led.set_mode("countdown")
+        self.gpio.setMode("captureImage")
         self.display.clear()
         #self.display.show_message("POSE!\n\nTaking a picture!");
         self.display.apply()
@@ -95,7 +93,7 @@ class FotoBox:
         self.display.clear()
         self.display.show_picture(output_filename)
         self.display.apply()
-        self.led.set_mode("finished")
+        self.gpio.setMode("rainbow")
         if self.seafile.ping():
             t = Thread(target = self.show_download_link, args = (output_filename, ))
             t.start()
@@ -107,7 +105,7 @@ class FotoBox:
         print("[QR-Code]: " + link)
 
         ## Check, if newer picture is available
-        if self.led.get_mode() != "countdown" and filename == self.pictures.get_last():
+        if self.gpio.getMode() != "countdown" and filename == self.pictures.get_last():
             self.display.clear()
             self.display.show_picture(filename)
             self.display.show_message(self.config["messages"]["read_qrcode"] + "\n" + self.config["messages"]["interact"])
@@ -122,9 +120,6 @@ class FotoBox:
         self.display.show_background()
         self.display.show_message("Shutting down...")
         self.display.apply()
-        if  not error:
-            self.led.set_mode("off")
-        self.led.close()
         self.camera.close()
         self.gpio.teardown()
         sleep(0.5)
@@ -176,7 +171,7 @@ class FotoBox:
 
     def handle_exception(self, msg):
         """Displays an error message and returns"""
-        self.led.set_mode("error")
+        self.gpio.setMode("error")
         self.display.clear()
         self.display.show_background()
         print("Error: " + msg)
@@ -187,7 +182,7 @@ class FotoBox:
     def check_camera(self):
         # Check for Camera
         while not self.camera.has_camera():
-            self.led.set_mode("no_camera")
+            self.gpio.set_mode("error")
             self.display.clear()
             self.display.show_background()
             self.display.show_message(self.config["messages"]["no_camera"])
@@ -197,7 +192,7 @@ class FotoBox:
             event = self.display.wait_for_event()
             self.handle_event(event)
 
-        self.led.set_mode("rainbow")
+        self.gpio.setMode("rainbow")
         self.display.clear()
         self.display.show_background()
         self.display.apply()
