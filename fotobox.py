@@ -26,6 +26,7 @@ class FotoBox:
         self.display        = GuiModule(self.config["display"])
         self.pictures       = PictureList(self.config["pictures"])
         self.gpio           = GPIO(self.handle_gpio, self.config["gpio"])
+        print("test")
         self.camera         = CameraModule(self.config["camera"])
         self.seafile        = SeafileClient(self.config["seafile-servers"])
         self.check_camera()
@@ -182,7 +183,7 @@ class FotoBox:
     def check_camera(self):
         # Check for Camera
         while not self.camera.has_camera():
-            self.gpio.set_mode("error")
+            self.gpio.setMode("error")
             self.display.clear()
             self.display.show_background()
             self.display.show_message(self.config["messages"]["no_camera"])

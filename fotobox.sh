@@ -1,14 +1,18 @@
 #!/bin/bash
 
 PATH_FOTOBOX="/home/pi/git/fotobox"
-LOG_DATE=$(date +%y%m%d-%H%M)
 cd $PATH_FOTOBOX
+python $PATH_FOTOBOX/setTimeFromCamera.py
+
+LOG_DATE=$(date +%y%m%d-%H%M)
 mkdir -p $PATH_FOTOBOX/log
 
-python $PATH_FOTOBOX/fotobox.py > $PATH_FOTOBOX/log/fotobox_$LOG_DATE.log 2> $PATH_FOTOBOX/log/fotobox_$LOG_DATE.err
-RETURN=$?
+while true; do
+    python $PATH_FOTOBOX/fotobox.py &> $PATH_FOTOBOX/log/fotobox_$LOG_DATE.log
+    RETURN=$?
 
-# Shutdown
-if [[ $RETURN -eq 12 ]]; then
-  sudo shutdown -h now
-fi
+    # Shutdown
+    if [[ $RETURN -eq 12 ]]; then
+        sudo shutdown -h now
+    fi
+done
