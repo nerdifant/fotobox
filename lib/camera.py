@@ -6,6 +6,7 @@ import subprocess
 import os
 import pwd
 import grp
+import re
 
 gphoto2cffi_enabled = False
 piggyphoto_enabled = False
@@ -84,6 +85,25 @@ class Camera_gPhoto:
 
     def has_camera(self):
         return (gphoto2cffi_enabled or piggyphoto_enabled) and self.c is not None
+
+    def status(self):
+        self.batteryLevel = 0
+        try:
+            test = self.c.summary
+        except:
+            print("Camera connection lost! Restarting camera interface!")
+            self.c.exit()
+            self.c = None
+            self.get_camera()
+
+        if self.has_camera():
+            self.batteryLevel = re.compile('^.*:([0-9]*).*$').match(str(self.c.config["main"]["status"]["batterylevel"])).group(1)
+            if self.batteryLevel < 50:
+                return False
+        else:
+            return False
+
+        return True
 
     def take_preview(self, filename="/tmp/preview.jpg"):
         if gphoto2cffi_enabled:

@@ -26,7 +26,6 @@ class FotoBox:
         self.display        = GuiModule(self.config["display"])
         self.pictures       = PictureList(self.config["pictures"])
         self.gpio           = GPIO(self.handle_gpio, self.config["gpio"])
-        print("test")
         self.camera         = CameraModule(self.config["camera"])
         self.seafile        = SeafileClient(self.config["seafile-servers"])
         self.check_camera()
@@ -62,6 +61,12 @@ class FotoBox:
 
     def take_single_picture(self):
         """Implements the picture taking routine"""
+        while not self.camera.status():
+            if self.camera.batteryLevel == 0:
+                self.check_camera()
+            else:
+                self.showError(self.config["messages"]["camera_change_battery"] + " ()" + self.camera.batteryLevel + " %)")
+
         # Show pose message
         self.gpio.setMode("captureImage")
         self.display.clear()
@@ -183,20 +188,23 @@ class FotoBox:
     def check_camera(self):
         # Check for Camera
         while not self.camera.has_camera():
-            self.gpio.setMode("error")
-            self.display.clear()
-            self.display.show_background()
-            self.display.show_message(self.config["messages"]["no_camera"])
-            self.display.apply()
-
-            # Wait for an event and handle it
-            event = self.display.wait_for_event()
-            self.handle_event(event)
+            self.showError(self.config["messages"]["no_camera"])
 
         self.gpio.setMode("rainbow")
         self.display.clear()
         self.display.show_background()
         self.display.apply()
+
+    def showError(self, message):
+        self.gpio.setMode("error")
+        self.display.clear()
+        self.display.show_background()
+        self.display.show_message(message)
+        self.display.apply()
+
+        # Wait for an event and handle it
+        event = self.display.wait_for_event()
+        self.handle_event(event)
 
 def main():
     with open('config.json', 'r') as f:

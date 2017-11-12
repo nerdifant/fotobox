@@ -39,7 +39,8 @@
   "messages": {
     "read_qrcode": "Scan the QR-Code too download the image.",
     "interact": "Please press the button to take a picture!",
-    "no_camera": "No Camera detected! Press S to search."
+    "no_camera": "No Camera detected! Press S to search.",
+    "camera_change_battery": "Camera battery level low!"
   },
   "seafile-servers": [{
       "enabled": false,
