@@ -61,12 +61,6 @@ class FotoBox:
 
     def take_single_picture(self):
         """Implements the picture taking routine"""
-        while not self.camera.status():
-            if self.camera.batteryLevel == 0:
-                self.check_camera()
-            else:
-                self.showError(self.config["messages"]["camera_change_battery"] + " ()" + self.camera.batteryLevel + " %)")
-
         # Show pose message
         self.gpio.setMode("captureImage")
         self.display.clear()
@@ -137,7 +131,13 @@ class FotoBox:
 
     def event_main_key(self):
         if self.camera.has_camera():
-            self.take_single_picture()
+            if self.camera.status():
+                self.take_single_picture()
+            else:
+                if self.camera.batteryLevel == 0:
+                    self.check_camera()
+                else:
+                    self.showError(self.config["messages"]["camera_change_battery"] + " ()" + self.camera.batteryLevel + " %)")
         else:
             self.camera.get_camera()
 
