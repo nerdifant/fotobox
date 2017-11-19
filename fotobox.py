@@ -13,7 +13,7 @@ from lib.seafile_client import SeafileClient
 from datetime import datetime
 from glob import glob
 from sys import exit
-from time import sleep, clock
+from time import sleep, clock, time
 from PIL import Image
 from threading import Thread
 import os
@@ -29,6 +29,7 @@ class FotoBox:
         self.camera         = CameraModule(self.config["camera"])
         self.seafile        = SeafileClient(self.config["seafile-servers"])
         self.check_camera()
+        self.shutdownTrigger = time() - 10
 
     def _run_plain(self):
         while True:
@@ -172,8 +173,12 @@ class FotoBox:
     def handle_gpio(self, channel):
         if channel in self.config["gpio"]["input_channels"].values():
             if channel == self.config["gpio"]["input_channels"]["shutdown"]:
-                print("Shutdown by GPIO")
-                self.teardown(False, True)
+                elapsed = time() - self.shutdownTrigger
+                if 5 < elapsed < 10:
+                    print("Shutdown by GPIO")
+                    self.teardown(False, True)
+                else:
+                    self.shutdownTrigger = time()
 
     def handle_exception(self, msg):
         """Displays an error message and returns"""

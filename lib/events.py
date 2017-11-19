@@ -32,14 +32,14 @@ class Rpi_GPIO:
             GPIO.setmode(GPIO.BCM)
 
             # Setup the input channels
-            for channels in self.config["input_channels"].values():
-                GPIO.setup(channels, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-                GPIO.add_event_detect(channels, GPIO.RISING, callback=handle_function, bouncetime=200)
+            for channel in self.config["input_channels"].values():
+                GPIO.setup(channel, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+                GPIO.add_event_detect(channel, GPIO.RISING, callback=handle_function, bouncetime=200)
 
             # Setup the output channels
-            for channels in self.config["output_channels"].values():
-                GPIO.setup(channels, GPIO.OUT)
-                GPIO.output(channels, GPIO.HIGH)
+            for channel in self.config["output_channels"].values():
+                GPIO.setup(channel, GPIO.OUT)
+                GPIO.output(channel, GPIO.HIGH)
         else:
             print("Warning: RPi.GPIO could not be loaded. GPIO disabled.")
 
