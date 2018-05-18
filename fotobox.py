@@ -98,7 +98,7 @@ class FotoBox:
         if self.seafile.ping():
             t = Thread(target = self.show_download_link, args = (output_filename, ))
             t.start()
-        sleep(1)
+        sleep(2)
 
     def show_download_link(self, filename):
         print("[QR-Code]: Creating link for " + filename)
@@ -158,6 +158,8 @@ class FotoBox:
         if key == ord('q'):
             self.teardown()
         # Take pictures
+        elif key == ord('b'):
+            self.event_main_key()
         elif key == ord('c'):
             self.event_main_key()
         # Search Camera
