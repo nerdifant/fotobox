@@ -26,7 +26,6 @@ class FotoBox:
         self.gpio           = GPIO(self.handle_gpio, self.config["gpio"])
         self.camera         = CameraModule(self.config["camera"])
         self.check_camera()
-        self.shutdownTrigger = time() - 10
 
     def _run_plain(self):
         while True:
@@ -153,12 +152,8 @@ class FotoBox:
     def handle_gpio(self, channel):
         if channel in self.config["gpio"]["input_channels"].values():
             if channel == self.config["gpio"]["input_channels"]["shutdown"]:
-                elapsed = time() - self.shutdownTrigger
-                if 5 < elapsed < 10:
-                    print("Shutdown by GPIO")
-                    self.teardown(False, True)
-                else:
-                    self.shutdownTrigger = time()
+                print("Shutdown by GPIO")
+                self.teardown(False, True)
 
     def handle_exception(self, msg):
         """Displays an error message and returns"""
